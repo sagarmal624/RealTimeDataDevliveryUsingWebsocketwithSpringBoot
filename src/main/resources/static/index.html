@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Realtime Guestbook</title>
+</head>
+<body>
+<div>
+    <p>Write a message:</p>
+    <textarea id="message"></textarea>
+    <button type="button" id="send">Send</button>
+</div>
+<div>
+    <h3>Messages:</h3>
+    <ol id="messages"></ol>
+</div>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var messageList = $("#messages");
+
+        var getMessageString = function (message) {
+            var date = new Date(message.date);
+            return "<li><p>Received: " + date + "</p><div>" + message.content + "</li>";
+        };
+
+        var socket = new SockJS('/guestbook');
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            // subscribe to the /topic/entries endpoint which feeds newly added messages
+            stompClient.subscribe('/topic/entries', function (data) {
+                // when a message is received add it to the end of the list
+                var body = data.body;
+                var message = JSON.parse(body);
+                messageList.append(getMessageString(message));
+            });
+        });
+        
+/// refresh page afer every 2 sec. if u want like this you can do
+        window.setInterval(function () {
+            stompClient.send("/app/guestbook", {}, "Test...");
+        }, 2000);
+// broadcast message to everyone
+
+//        $("#send").on("click", function () {
+//            // send the message
+//            stompClient.send("/app/guestbook", {}, $("#message").val());
+//            $("#message").val("");
+//        });
+
+    });
+</script>
+</body>
+</html>
