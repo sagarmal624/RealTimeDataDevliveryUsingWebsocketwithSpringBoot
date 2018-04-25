@@ -38,7 +38,7 @@
                 messageList.append(getMessageString(message));
             });
         });
-        
+
 /// refresh page afer every 2 sec. if u want like this you can do
         window.setInterval(function () {
             stompClient.send("/app/guestbook", {}, "Test...");
